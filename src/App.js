@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from "react";
+import LocationInput from "./components/LocationInput";
 
-function App() {
+const App = () => {
+  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
+
+  // Get user's location from browser or GeoJS API
+  const fetchUserLocation = async () => {
+    try {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const { latitude, longitude } = position.coords;
+            const geoResponse = await axios.get(
+              `https://get.geojs.io/v1/ip/geo.json`
+            );
+            const city = geoResponse.data.city;
+            setLocation(city);
+          },
+          async () => {
+            const geoResponse = await axios.get(
+              `https://get.geojs.io/v1/ip/geo.json`
+            );
+            const city = geoResponse.data.city;
+            setLocation(city);
+          }
+        );
+      }
+    } catch (err) {
+      setError("Unable to fetch user location.");
+    }
+  };
+
+  useEffect(() => {
+    fetchUserLocation();
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="min-h-screen bg-gray-100 p-4">
+      <h1 className="text-3xl font-bold text-center mb-4">Music Band Finder</h1>
+      <LocationInput onSearch={fetchBands} />
+      {error && <p className="text-red-500 text-center">{error}</p>}
     </div>
   );
-}
+};
 
 export default App;
