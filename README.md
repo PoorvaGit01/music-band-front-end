@@ -1,3 +1,16 @@
+# Music Band Finder 🎸
+
+**Music Band Finder** is a React application that allows users to search for recently founded music bands in a given city or automatically fetch bands based on the user's current location.
+
+---
+
+## Features 🚀
+
+- Search for bands founded in the last 10 years in any city.
+- Automatically detect the user's location using browser geolocation or fallback to an external GeoJS API.
+- Fetch and display up to 50 bands using the [MusicBrainz API](https://musicbrainz.org/doc/MusicBrainz_API).
+- Modern, responsive UI styled with Tailwind CSS.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
