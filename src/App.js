@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { fetchBands, fetchUserCity } from "./services/bandService";
 import BandList from "./components/BandList";
 import LocationInput from "./components/LocationInput";
 
@@ -8,46 +8,45 @@ const App = () => {
   const [location, setLocation] = useState("");
   const [error, setError] = useState("");
 
-  // Fetch bands for a given city
-  const fetchBands = async (city) => {
+  const getBandsForCity = async (city) => {
     try {
-      const response = await axios.get(
-        `https://musicbrainz.org/ws/2/artist/?query=area:${city} AND begin:[${new Date().getFullYear() - 10} TO *]&fmt=json`
-      );
-      setBands(response.data.artists.slice(0, 50));
+      const bandData = await fetchBands(city);
+      setBands(bandData);
     } catch (err) {
       setError("Failed to fetch bands. Please try again.");
     }
   };
 
-  // Get user's location from browser or GeoJS API
   const fetchUserLocation = async () => {
+    const handleSuccess = async () => {
+      try {
+        const city = await fetchUserCity();
+        setLocation(city);
+        getBandsForCity(city);
+      } catch (err) {
+        setError("Failed to fetch city or bands.");
+      }
+    };
+  
+    const handleError = () => {
+      setError("Geolocation access denied or unavailable.");
+    };
+  
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const { latitude, longitude } = position.coords;
-            const geoResponse = await axios.get(
-              `https://get.geojs.io/v1/ip/geo.json`
-            );
-            const city = geoResponse.data.city;
-            setLocation(city);
-            fetchBands(city); // Fetch bands after getting user location
-          },
           async () => {
-            const geoResponse = await axios.get(
-              `https://get.geojs.io/v1/ip/geo.json`
-            );
-            const city = geoResponse.data.city;
-            setLocation(city);
-            fetchBands(city); // Fetch bands after getting user location
-          }
+            await handleSuccess(); 
+          },
         );
+      } else {
+        handleError(); 
       }
     } catch (err) {
-      setError("Unable to fetch user location.");
+      setError("Unexpected error while fetching location.");
     }
   };
+  
 
   useEffect(() => {
     fetchUserLocation();
@@ -56,7 +55,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-4">
       <h1 className="text-3xl font-bold text-center mb-4">Music Band Finder</h1>
-      <LocationInput onSearch={fetchBands} />
+      <LocationInput onSearch={getBandsForCity} />
       {error && <p className="text-red-500 text-center">{error}</p>}
       <BandList bands={bands} />
     </div>

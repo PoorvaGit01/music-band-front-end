@@ -5,7 +5,7 @@ const LocationInput = ({ onSearch }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (city) {
+    if (city.trim) {
       onSearch(city);
     }
   };
